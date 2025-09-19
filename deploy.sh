@@ -73,7 +73,14 @@ restart() {
 }
 
 logs() {
-  $COMPOSE -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f
+  local service_name="${2:-}"
+  if [ -n "$service_name" ]; then
+    print_status "Showing logs for service: $service_name"
+    $COMPOSE -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f "$service_name"
+  else
+    print_status "Showing logs for all services"
+    $COMPOSE -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f
+  fi
 }
 
 status() {
@@ -97,9 +104,13 @@ Commands:
   stop      - Stop all services
   restart   - Restart all services
   logs      - Show logs from all services
+  logs <service> - Show logs from specific service (e.g., logs app, logs postgres)
   status    - Show status of all services
   clean     - Clean up all Docker resources
   help      - Show this help message
+
+Available services:
+  app, postgres, redis, rabbitmq, queue-worker
 
 Detected compose command: $COMPOSE
 Compose file: $COMPOSE_FILE
