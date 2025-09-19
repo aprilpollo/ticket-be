@@ -36,7 +36,7 @@ func (s *AuthService) SignIn(ctx *fiber.Ctx, req *domain.SignInRequest) (*domain
 	}
 
 	// Generate JWT tokens
-	accessToken, refreshToken, expiresIn, err := s.authRepo.GenerateJWTToken(ctx, user.ID, user.Email)
+	accessToken, _, expiresIn, err := s.authRepo.GenerateJWTToken(ctx, user.ID, user.Email)
 	if err != nil {
 		return nil, errors.New("failed to generate tokens")
 	}
@@ -44,7 +44,6 @@ func (s *AuthService) SignIn(ctx *fiber.Ctx, req *domain.SignInRequest) (*domain
 	return &domain.AuthResponse{
 		User:         user,
 		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
 		ExpiresIn:    expiresIn,
 	}, nil
 }
@@ -113,7 +112,7 @@ func (s *AuthService) SignUp(ctx *fiber.Ctx, req *domain.SignUpRequest) (*domain
 	}
 
 	// Generate JWT tokens
-	accessToken, refreshToken, expiresIn, err := s.authRepo.GenerateJWTToken(ctx, user.ID, user.Email)
+	accessToken, _, expiresIn, err := s.authRepo.GenerateJWTToken(ctx, user.ID, user.Email)
 	if err != nil {
 		return nil, errors.New("failed to generate tokens")
 	}
@@ -121,7 +120,6 @@ func (s *AuthService) SignUp(ctx *fiber.Ctx, req *domain.SignUpRequest) (*domain
 	return &domain.AuthResponse{
 		User:         user,
 		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
 		ExpiresIn:    expiresIn,
 	}, nil
 }

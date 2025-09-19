@@ -22,7 +22,6 @@ type SignUpRequest struct {
 type AuthResponse struct {
 	User         *User  `json:"user"`
 	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
 	ExpiresIn    int64  `json:"expires_in"`
 }
 
@@ -79,4 +78,14 @@ type OrganizationWithMember struct {
 	Organization *Organization           `json:"organization"`
 	Member       *OrganizationMember     `json:"member"`
 	Role         *OrganizationMemberRole `json:"role"`
+}
+
+
+type ValidateUserRequest struct {
+	Uuid         string `json:"uuid" bson:"uuid"`
+	BusinessCode string `json:"business_code" bson:"business_code"`
+	ProfileImage string `json:"profile_image" bson:"profile_image"`
+	Role         string `json:"role" bson:"role"`
+	Email        string `json:"email" bson:"email"`
+	Active       bool   `json:"active" bson:"active"`
 }

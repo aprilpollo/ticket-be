@@ -93,3 +93,17 @@ func (h *AuthHandler) ValidateToken(c *fiber.Ctx) error {
 		"email":   claims.Email,
 	})
 }
+
+func (h *AuthHandler) ValidateUser(c *fiber.Ctx) error {
+	response := domain.ValidateUserRequest{
+		Uuid: c.Locals("user_id").(string),
+		Email: c.Locals("email").(string),
+		Active: true,
+		Role: "owner",
+		ProfileImage: "#",
+		BusinessCode: "#",
+	}
+
+	return ResData(c, fiber.StatusOK, "SUCCESS", "", response)
+
+}

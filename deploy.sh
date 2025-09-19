@@ -109,8 +109,6 @@ Commands:
   clean     - Clean up all Docker resources
   help      - Show this help message
 
-Available services:
-  task-management-be, task-management-queue, task-management-db, task-management-redis, task-management-rabbitmq
 
 Detected compose command: $COMPOSE
 Compose file: $COMPOSE_FILE

@@ -170,8 +170,7 @@ func (r *AuthRepository) GenerateUniqueSlug(ctx *fiber.Ctx) (string, error) {
 }
 
 func (r *AuthRepository) GenerateJWTToken(ctx *fiber.Ctx, userID uint, email string) (string, string, int64, error) {
-	// JWT secret key (should be from config in production)
-	secretKey := []byte("your-secret-key") // TODO: Move to config
+	secretKey := []byte("your-secret-key") 
 
 	// Access token (expires in 15 minutes)
 	accessExpirationTime := time.Now().Add(15 * time.Minute)

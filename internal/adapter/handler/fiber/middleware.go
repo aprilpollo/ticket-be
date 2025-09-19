@@ -6,6 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/golang-jwt/jwt/v5"
+	"task-management/internal/core/domain"
 	"task-management/internal/util"
 )
 
@@ -45,8 +47,35 @@ func (m *MiddlewareHandler) SetupGlobalMiddleware() {
 // AuthMiddleware - authentication middleware
 func (m *MiddlewareHandler) AuthMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// TODO: Implement JWT token validation
-		// For now, just pass through
+		authHeader := c.Get("Authorization")
+		if authHeader == "" {
+			return ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Authorization header is required", nil)
+		}
+
+		tokenString := ""
+		if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+			tokenString = authHeader[7:]
+		} else {
+			return ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid authorization header format", nil)
+		}
+
+		claims := &domain.JWTClaims{}
+		secretKey := []byte("your-secret-key") 
+
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid token", nil)
+			}
+			return secretKey, nil
+		})
+
+		if err != nil || !token.Valid {
+			return ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid token", nil)
+		}
+
+		c.Locals("user_id", claims.UserID)
+		c.Locals("email", claims.Email)
+
 		return c.Next()
 	}
 }

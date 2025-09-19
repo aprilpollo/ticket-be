@@ -45,6 +45,7 @@ func (r *App) UserRoutes(userHandler *UserHandler) {
 	users := api.Group("/users")
 	users.Get("/", userHandler.GetAllUsers)
 	users.Get("/:id", userHandler.GetUserByID)
+
 }
 
 func (r *App) AuthRoutes(authHandler *AuthHandler) {
@@ -55,6 +56,7 @@ func (r *App) AuthRoutes(authHandler *AuthHandler) {
 	auth.Post("/signin", authHandler.SignIn)
 	auth.Post("/signup", authHandler.SignUp)
 	auth.Get("/validate", r.middleware.AuthMiddleware(), authHandler.ValidateToken)
+	auth.Get("/validate/user", r.middleware.AuthMiddleware(), authHandler.ValidateUser)
 }
 
 func (r *App) Serve(port string) error {
