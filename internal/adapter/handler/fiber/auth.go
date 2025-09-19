@@ -96,7 +96,7 @@ func (h *AuthHandler) ValidateToken(c *fiber.Ctx) error {
 
 func (h *AuthHandler) ValidateUser(c *fiber.Ctx) error {
 	response := domain.ValidateUserRequest{
-		Uuid: c.Locals("user_id").(string),
+		Uuid: "#",
 		Email: c.Locals("email").(string),
 		Active: true,
 		Role: "owner",
