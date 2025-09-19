@@ -39,7 +39,7 @@ func main() {
 	config.LoadConfig()
 
 	printInfo("Connecting to database...")
-	if err := gormOrm.Init(config.Env.Postgre.URI, 1, 1, 0); err != nil {
+	if err := gormOrm.Init(config.Env.Postgre.URI_Script, 1, 1, 0); err != nil {
 		log.Fatalf("%s failed to connect DB: %v", red("[x]"), err)
 	}
 	printSuccess("Database connected successfully")
