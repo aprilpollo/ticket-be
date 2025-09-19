@@ -40,9 +40,9 @@ COPY --from=builder /app/main .
 # Copy static files if needed
 COPY --from=builder /app/static ./static
 
-
-# Change ownership to non-root user
-RUN chown -R appuser:appuser /app
+# Create logs directory and set permissions
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
