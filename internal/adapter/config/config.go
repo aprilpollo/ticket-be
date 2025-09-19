@@ -51,6 +51,7 @@ type GoogleAuth struct {
 // Postgre holds the configuration for PostgreSQL database connection.
 type Postgre struct {
 	URI             string `env:"POSTGRE_URI,default="`
+	URI_Script      string `env:"POSTGRE_URI_SCRIPT,default="`
 	MaxIdleConns    int    `env:"POSTGRE_MAX_IDLE_CONNS,default=10"`
 	MaxOpenConns    int    `env:"POSTGRE_MAX_OPEN_CONNS,default=100"`
 	ConnMaxLifetime int    `env:"POSTGRE_CONN_MAX_LIFETIME,default=0"`
