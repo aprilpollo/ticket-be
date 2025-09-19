@@ -154,6 +154,7 @@ The project includes a deployment script with the following commands:
 ./deploy.sh stop      # Stop all services
 ./deploy.sh restart   # Restart all services
 ./deploy.sh logs      # Show logs from all services
+./deploy.sh logs app  # Show logs from specific service (app, postgres, redis, rabbitmq, queue-worker)
 ./deploy.sh status    # Show status of all services
 ./deploy.sh clean     # Clean up all Docker resources
 ./deploy.sh help      # Show help message
