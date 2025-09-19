@@ -110,7 +110,7 @@ Commands:
   help      - Show this help message
 
 Available services:
-  app, postgres, redis, rabbitmq, queue-worker
+  task-management-be, task-management-queue, task-management-db, task-management-redis, task-management-rabbitmq
 
 Detected compose command: $COMPOSE
 Compose file: $COMPOSE_FILE
@@ -123,7 +123,7 @@ case "${1:-help}" in
   start)   start ;;
   stop)    stop ;;
   restart) restart ;;
-  logs)    logs ;;
+  logs)    logs "$@" ;;
   status)  status ;;
   clean)   clean ;;
   help|*)  help; exit 0 ;;
