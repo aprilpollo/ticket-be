@@ -70,8 +70,6 @@ type OrganizationMemberRole struct {
 	CanViewAllProjects    bool      `json:"can_view_all_projects"`
 	CanManageTasks        bool      `json:"can_manage_tasks"`
 	CanViewReports        bool      `json:"can_view_reports"`
-	CreatedAt             time.Time `json:"created_at"`
-	UpdatedAt             time.Time `json:"updated_at"`
 }
 
 type OrganizationWithMember struct {

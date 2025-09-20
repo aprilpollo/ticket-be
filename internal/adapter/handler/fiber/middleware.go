@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"task-management/internal/core/domain"
 	"task-management/internal/util"
+	config "task-management/internal/adapter/config"
 )
 
 type MiddlewareHandler struct {
@@ -60,7 +61,7 @@ func (m *MiddlewareHandler) AuthMiddleware() fiber.Handler {
 		}
 
 		claims := &domain.JWTClaims{}
-		secretKey := []byte("your-secret-key") 
+		secretKey := []byte(config.Env.JWT.SecretKey) 
 
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

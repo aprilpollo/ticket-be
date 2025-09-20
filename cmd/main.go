@@ -28,23 +28,24 @@ func main() {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(gormOrm.Trx)
 	authRepo := repository.NewAuthRepository(gormOrm.Trx)
+	organizationRepo := repository.NewOrganizationRepository(gormOrm.Trx)
 
 	// Initialize services
 	userService := service.NewUserService(userRepo)
 	authService := service.NewAuthService(authRepo)
-
-	// Initialize app with auth service
-	app := httpfiber.NewApp()
-
+	organizationService := service.NewOrganizationService(organizationRepo)
 
 	// Initialize handlers
 	userHandler := httpfiber.NewUserHandler(userService)
 	authHandler := httpfiber.NewAuthHandler(authService)
+	organizationHandler := httpfiber.NewOrganizationHandler(organizationService)
 
-	// Initialize routes
+	// Initialize App routes
+	app := httpfiber.NewApp()
 	app.MainRoutes()
 	app.UserRoutes(userHandler)
 	app.AuthRoutes(authHandler)
+	app.OrganizationRoutes(organizationHandler)
 
 	fmt.Println("[INFO] Starting server...")
 	app.Serve(fmt.Sprintf(":%s", config.Env.ApiPort))

@@ -91,19 +91,13 @@ func (s *AuthService) SignUp(ctx *fiber.Ctx, req *domain.SignUpRequest) (*domain
 		return nil, errors.New("failed to create organization")
 	}
 
-	// Get default role
-	defaultRole, err := s.authRepo.GetDefaultRole(ctx)
-	if err != nil {
-		return nil, errors.New("failed to get default role")
-	}
-
 	// Create organization member
 	now := time.Now()
 	organizationMember := &domain.OrganizationMember{
 		OrganizationID: organization.ID,
 		UserID:         user.ID,
-		RoleID:         defaultRole.ID,
-		StatusID:       1, // Assuming 1 is active status
+		RoleID:         1,
+		StatusID:       1, 
 		JoinedAt:       &now,
 	}
 

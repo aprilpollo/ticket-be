@@ -19,6 +19,106 @@ func FindAll[M any](c *fiber.Ctx, db *gorm.DB, preloads ...string) (int64, int64
 		query = query.Preload(preload)
 	}
 
+	query = queryParams(query, c)
+
+	if err := query.Count(&total).Error; err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	sortBy := c.Query("sort_by", "id")
+	sortOrder := c.Query("sort_order", "asc")
+
+	if strings.ToLower(sortOrder) == "desc" {
+		query = query.Order(fmt.Sprintf("%s desc", sortBy))
+	} else {
+		query = query.Order(fmt.Sprintf("%s asc", sortBy))
+	}
+
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+	query = query.Offset(offset).Limit(limit)
+
+	if err := query.Find(&models).Error; err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	return total, int64(page), int64(limit), models, nil
+}
+
+func FindOne[M any](c *fiber.Ctx, db *gorm.DB, id int64, preloads ...string) (*M, error) {
+	var models M
+	query := db.Model(new(M))
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if err := query.First(&models, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &models, nil
+}
+
+func FindAllByCondition[M any](c *fiber.Ctx, db *gorm.DB, column string, value interface{}, preloads ...string) (int64, int64, int64, []M, error) {
+	var models []M
+	var total int64
+
+	query := db.Model(new(M))
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if err := query.Where(fmt.Sprintf("%s = ?", column), value).Find(&models).Error; err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	query = queryParams(query, c)
+
+	if err := query.Count(&total).Error; err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	sortBy := c.Query("sort_by", "id")
+	sortOrder := c.Query("sort_order", "asc")
+
+	if strings.ToLower(sortOrder) == "desc" {
+		query = query.Order(fmt.Sprintf("%s desc", sortBy))
+	} else {
+		query = query.Order(fmt.Sprintf("%s asc", sortBy))
+	}
+
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	limit, _ := strconv.Atoi(c.Query("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+	query = query.Offset(offset).Limit(limit)
+
+	if err := query.Find(&models).Error; err != nil {
+		return 0, 0, 0, nil, err
+	}
+
+	return total, int64(page), int64(limit), models, nil
+}
+
+func queryParams(query *gorm.DB, c *fiber.Ctx) *gorm.DB {
 	queryParams := c.Queries()
 
 	for key, value := range queryParams {
@@ -67,50 +167,5 @@ func FindAll[M any](c *fiber.Ctx, db *gorm.DB, preloads ...string) (int64, int64
 		}
 	}
 
-	if err := query.Count(&total).Error; err != nil {
-		return 0, 0, 0, nil, err
-	}
-
-	sortBy := c.Query("sort_by", "id")
-	sortOrder := c.Query("sort_order", "asc")
-
-	if strings.ToLower(sortOrder) == "desc" {
-		query = query.Order(fmt.Sprintf("%s desc", sortBy))
-	} else {
-		query = query.Order(fmt.Sprintf("%s asc", sortBy))
-	}
-
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
-
-	if page < 1 {
-		page = 1
-	}
-	if limit <= 0 {
-		limit = 10
-	}
-
-	offset := (page - 1) * limit
-	query = query.Offset(offset).Limit(limit)
-
-	if err := query.Find(&models).Error; err != nil {
-		return 0, 0, 0, nil, err
-	}
-
-	return total, int64(page), int64(limit), models, nil
-}
-
-func FindOne[M any](c *fiber.Ctx, db *gorm.DB, id int64, preloads ...string) (*M, error) {
-	var models M
-	query := db.Model(new(M))
-
-	for _, preload := range preloads {
-		query = query.Preload(preload)
-	}
-
-	if err := query.First(&models, id).Error; err != nil {
-		return nil, err
-	}
-
-	return &models, nil
+	return query
 }

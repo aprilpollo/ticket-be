@@ -79,7 +79,7 @@ type OrganizationMemberRole struct {
 }
 
 type VWOrganizationMemberRole struct {
-	OrganizationID        uint   `json:"organization_id"`
+	OrganizationID        uint   `json:"organization_id" gorm:"primaryKey"`
 	OrganizationName      string `json:"organization_name"`
 	Slug                  string `json:"slug"`
 	UserID                uint   `json:"user_id"`

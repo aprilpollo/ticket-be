@@ -13,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	config "task-management/internal/adapter/config"
 )
 
 type AuthRepository struct {
@@ -170,10 +171,9 @@ func (r *AuthRepository) GenerateUniqueSlug(ctx *fiber.Ctx) (string, error) {
 }
 
 func (r *AuthRepository) GenerateJWTToken(ctx *fiber.Ctx, userID uint, email string) (string, string, int64, error) {
-	secretKey := []byte("your-secret-key") 
+	secretKey := []byte(config.Env.JWT.SecretKey)
 
-	// Access token (expires in 15 minutes)
-	accessExpirationTime := time.Now().Add(15 * time.Minute)
+	accessExpirationTime := time.Now().Add(time.Duration(config.Env.JWT.JwtExpireDaysCount) * 24 * time.Hour)
 	accessClaims := &domain.JWTClaims{
 		UserID: userID,
 		Email:  email,
@@ -190,8 +190,7 @@ func (r *AuthRepository) GenerateJWTToken(ctx *fiber.Ctx, userID uint, email str
 		return "", "", 0, err
 	}
 
-	// Refresh token (expires in 7 days)
-	refreshExpirationTime := time.Now().Add(7 * 24 * time.Hour)
+	refreshExpirationTime := time.Now().Add(30 * 24 * time.Hour)
 	refreshClaims := &domain.JWTClaims{
 		UserID: userID,
 		Email:  email,
@@ -208,13 +207,13 @@ func (r *AuthRepository) GenerateJWTToken(ctx *fiber.Ctx, userID uint, email str
 		return "", "", 0, err
 	}
 
-	expiresIn := int64(15 * 60) // 15 minutes in seconds
+	expiresIn := int64(time.Until(accessExpirationTime).Seconds())
 
 	return accessTokenString, refreshTokenString, expiresIn, nil
 }
 
 func (r *AuthRepository) ValidateJWTToken(ctx *fiber.Ctx, tokenString string) (*domain.JWTClaims, error) {
-	secretKey := []byte("your-secret-key") // TODO: Move to config
+	secretKey := []byte(config.Env.JWT.SecretKey) 
 
 	token, err := jwt.ParseWithClaims(tokenString, &domain.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
@@ -230,6 +229,7 @@ func (r *AuthRepository) ValidateJWTToken(ctx *fiber.Ctx, tokenString string) (*
 
 	return nil, fmt.Errorf("invalid token")
 }
+
 
 func (r *AuthRepository) userModelToDomain(userModel *models.User) *domain.User {
 	return &domain.User{
@@ -267,7 +267,5 @@ func (r *AuthRepository) roleModelToDomain(roleModel *models.OrganizationMemberR
 		CanViewAllProjects:    roleModel.CanViewAllProjects,
 		CanManageTasks:        roleModel.CanManageTasks,
 		CanViewReports:        roleModel.CanViewReports,
-		CreatedAt:             roleModel.CreatedAt,
-		UpdatedAt:             roleModel.UpdatedAt,
 	}
 }

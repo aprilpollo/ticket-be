@@ -62,3 +62,12 @@ func (r *App) AuthRoutes(authHandler *AuthHandler) {
 func (r *App) Serve(port string) error {
 	return r.app.Listen(port)
 }
+
+
+func (r *App) OrganizationRoutes(organizationHandler *OrganizationHandler) {
+	api := r.app.Group("/api/v1")
+
+	organizations := api.Group("/organizations")
+	organizations.Use(r.middleware.AuthMiddleware())
+	organizations.Get("/", organizationHandler.GetUserRoleInOrganization)
+}

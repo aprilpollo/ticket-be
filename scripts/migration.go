@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"task-management/internal/adapter/storage/gorm"
+	gormOrm "task-management/internal/adapter/storage/gorm"
 	"task-management/internal/adapter/storage/gorm/models"
+	"task-management/internal/adapter/storage/gorm/views"
 
 	"github.com/fatih/color"
 )
@@ -49,22 +50,22 @@ func main() {
 		log.Fatalf("%s migration failed: %v", red("[FAILED]"), err)
 	}
 
-	// printInfo("Dropping existing views...")
-	// for name := range views.Views {
-	// 	dropSQL := fmt.Sprintf("DROP VIEW IF EXISTS %s CASCADE;", name)
-	// 	if err := gormOrm.Trx.Exec(dropSQL).Error; err != nil {
-	// 		log.Fatalf("%s failed to drop view %s: %v", red("[x]"), name, err)
-	// 	}
-	// 	printSuccess(fmt.Sprintf("Dropped view: %s", name))
-	// }
+	printInfo("Dropping existing views...")
+	for name := range views.Views {
+		dropSQL := fmt.Sprintf("DROP VIEW IF EXISTS %s CASCADE;", name)
+		if err := gormOrm.Trx.Exec(dropSQL).Error; err != nil {
+			log.Fatalf("%s failed to drop view %s: %v", red("[x]"), name, err)
+		}
+		printSuccess(fmt.Sprintf("Dropped view: %s", name))
+	}
 
-	// printInfo("Creating new views...")
-	// for name, query := range views.Views {
-	// 	if err := gormOrm.Trx.Exec(query).Error; err != nil {
-	// 		log.Fatalf("%s failed to create view %s: %v", red("[x]"), name, err)
-	// 	}
-	// 	printSuccess(fmt.Sprintf("Created view: %s", name))
-	// }
+	printInfo("Creating new views...")
+	for name, query := range views.Views {
+		if err := gormOrm.Trx.Exec(query).Error; err != nil {
+			log.Fatalf("%s failed to create view %s: %v", red("[x]"), name, err)
+		}
+		printSuccess(fmt.Sprintf("Created view: %s", name))
+	}
 
 	upsertDefaultOrganization()
 	fmt.Println()
@@ -245,24 +246,15 @@ func upsertDefaultOrganization() {
 	}
 
 	printInfo("Seeding organization statuses...")
-	if err := gormOrm.Trx.Where("id IN ?", []uint{1, 2, 3, 4, 5}).Delete(&models.OrganizationStatus{}).Error; err != nil {
-		log.Fatalf("%s failed to delete existing organization statuses: %v", red("[x]"), err)
+	// Use upsert instead of delete to avoid foreign key constraints
+	if err := gormOrm.Trx.Save(organizationStatuses).Error; err != nil {
+		log.Fatalf("%s failed to upsert organization statuses: %v", red("[x]"), err)
 	}
-	if err := gormOrm.Trx.Where("id IN ?", []uint{1, 2, 3, 4, 5, 6, 7}).Delete(&models.MemberStatus{}).Error; err != nil {
-		log.Fatalf("%s failed to delete existing member statuses: %v", red("[x]"), err)
+	if err := gormOrm.Trx.Save(memberStatuses).Error; err != nil {
+		log.Fatalf("%s failed to upsert member statuses: %v", red("[x]"), err)
 	}
-
-	if err := gormOrm.Trx.Where("id IN ?", []uint{1, 2, 3, 4, 5, 6}).Delete(&models.OrganizationMemberRole{}).Error; err != nil {
-		log.Fatalf("%s failed to delete existing organization member roles: %v", red("[x]"), err)
-	}
-	if err := gormOrm.Trx.Create(organizationStatuses).Error; err != nil {
-		log.Fatalf("%s failed to create default organization statuses: %v", red("[x]"), err)
-	}
-	if err := gormOrm.Trx.Create(memberStatuses).Error; err != nil {
-		log.Fatalf("%s failed to create default member statuses: %v", red("[x]"), err)
-	}
-	if err := gormOrm.Trx.Create(organizationMemberRoles).Error; err != nil {
-		log.Fatalf("%s failed to create default organization member roles: %v", red("[x]"), err)
+	if err := gormOrm.Trx.Save(organizationMemberRoles).Error; err != nil {
+		log.Fatalf("%s failed to upsert organization member roles: %v", red("[x]"), err)
 	}
 
 	printSuccess(fmt.Sprintf("Created %d organization statuses", len(organizationStatuses)))
@@ -406,18 +398,12 @@ func upsertDefaultProject() {
 	}
 
 	printInfo("Seeding project statuses...")
-	if err := gormOrm.Trx.Where("id IN ?", []uint{1, 2, 3, 4, 5, 6}).Delete(&models.ProjectStatus{}).Error; err != nil {
-		log.Fatalf("%s failed to delete existing project statuses: %v", red("[x]"), err)
+	// Use upsert instead of delete to avoid foreign key constraints
+	if err := gormOrm.Trx.Save(projectStatuses).Error; err != nil {
+		log.Fatalf("%s failed to upsert project statuses: %v", red("[x]"), err)
 	}
-	if err := gormOrm.Trx.Create(projectStatuses).Error; err != nil {
-		log.Fatalf("%s failed to create default project statuses: %v", red("[x]"), err)
-	}
-
-	if err := gormOrm.Trx.Where("id IN ?", []uint{1, 2, 3, 4, 5, 6}).Delete(&models.ProjectMemberRole{}).Error; err != nil {
-		log.Fatalf("%s failed to delete existing project member roles: %v", red("[x]"), err)
-	}
-	if err := gormOrm.Trx.Create(projectMemberRoles).Error; err != nil {
-		log.Fatalf("%s failed to create default project member roles: %v", red("[x]"), err)
+	if err := gormOrm.Trx.Save(projectMemberRoles).Error; err != nil {
+		log.Fatalf("%s failed to upsert project member roles: %v", red("[x]"), err)
 	}
 
 	printSuccess(fmt.Sprintf("Created %d project statuses", len(projectStatuses)))
@@ -478,11 +464,9 @@ func upsertDefaultPriority() {
 	}
 
 	printInfo("Seeding priorities...")
-	if err := gormOrm.Trx.Where("id IN ?", []uint{1, 2, 3, 4, 5, 6}).Delete(&models.Priority{}).Error; err != nil {
-		log.Fatalf("%s failed to delete existing priorities: %v", red("[x]"), err)
-	}
-	if err := gormOrm.Trx.Create(priorities).Error; err != nil {
-		log.Fatalf("%s failed to create default priorities: %v", red("[x]"), err)
+	// Use upsert instead of delete to avoid foreign key constraints
+	if err := gormOrm.Trx.Save(priorities).Error; err != nil {
+		log.Fatalf("%s failed to upsert priorities: %v", red("[x]"), err)
 	}
 	printSuccess(fmt.Sprintf("Created %d priorities", len(priorities)))
 }
