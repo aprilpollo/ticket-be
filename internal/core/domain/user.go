@@ -37,14 +37,14 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	FirstName          *string    `json:"first_name"`
-	LastName           *string    `json:"last_name"`
-	DisplayName        *string    `json:"display_name"`
-	Bio                *string    `json:"bio"`
-	Avatar             *string    `json:"avatar"`
-	DateOfBirth        *time.Time `json:"date_of_birth"`
-	Gender             *string    `json:"gender"`
-	PhoneNumber        *string    `json:"phone_number"`
-	LanguagePreference *string    `json:"language_preference"`
-	TimeZone           *string    `json:"time_zone"`
+	FirstName          string    `json:"first_name"`
+	LastName           string    `json:"last_name"`
+	DisplayName        string    `json:"display_name"`
+	Bio                string    `json:"bio"`
+	Avatar             string    `json:"avatar"`
+	DateOfBirth        time.Time `json:"date_of_birth"`
+	Gender             string    `json:"gender"`
+	PhoneNumber        string    `json:"phone_number"`
+	LanguagePreference string    `json:"language_preference"`
+	TimeZone           string    `json:"time_zone"`
 }

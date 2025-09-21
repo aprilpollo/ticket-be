@@ -1,4 +1,4 @@
-package httpfiber
+package middleware
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -10,20 +10,21 @@ import (
 	"task-management/internal/core/domain"
 	"task-management/internal/util"
 	config "task-management/internal/adapter/config"
+	"task-management/internal/adapter/handler/fiber/routes"
 )
 
-type MiddlewareHandler struct {
+type App struct {
 	app *fiber.App
 }
 
-func NewMiddlewareHandler(app *fiber.App) *MiddlewareHandler {
-	return &MiddlewareHandler{
+func NewMiddlewareHandler(app *fiber.App) *App {
+	return &App{
 		app: app,
 	}
 }
 
 // SetupGlobalMiddleware sets up all global middleware
-func (m *MiddlewareHandler) SetupGlobalMiddleware() {
+func (m *App) SetupGlobalMiddleware() {
 	// Recovery middleware - recovers from panics
 	m.app.Use(recover.New())
 
@@ -46,18 +47,18 @@ func (m *MiddlewareHandler) SetupGlobalMiddleware() {
 }
 
 // AuthMiddleware - authentication middleware
-func (m *MiddlewareHandler) AuthMiddleware() fiber.Handler {
+func (m *App) AuthMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Authorization header is required", nil)
+			return routes.ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Authorization header is required", nil)
 		}
 
 		tokenString := ""
 		if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
 			tokenString = authHeader[7:]
 		} else {
-			return ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid authorization header format", nil)
+			return routes.ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid authorization header format", nil)
 		}
 
 		claims := &domain.JWTClaims{}
@@ -65,13 +66,13 @@ func (m *MiddlewareHandler) AuthMiddleware() fiber.Handler {
 
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid token", nil)
+				return nil, routes.ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid token", nil)
 			}
 			return secretKey, nil
 		})
 
 		if err != nil || !token.Valid {
-			return ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid token", nil)
+			return routes.ResData(c, fiber.StatusUnauthorized, "UNAUTHORIZED", "Invalid token", nil)
 		}
 
 		c.Locals("user_id", claims.UserID)
@@ -82,7 +83,7 @@ func (m *MiddlewareHandler) AuthMiddleware() fiber.Handler {
 }
 
 // RateLimitMiddleware - rate limiting middleware
-func (m *MiddlewareHandler) RateLimitMiddleware() fiber.Handler {
+func (m *App) RateLimitMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// TODO: Implement rate limiting logic
 		// For now, just pass through

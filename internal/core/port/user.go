@@ -7,11 +7,15 @@ import (
 )
 
 type UserRepository interface {
-	GetUserByID(ctx *fiber.Ctx, id uint) (*domain.User, error)
 	GetAllUsers(ctx *fiber.Ctx) (int64, int64, int64, []*domain.User, error)
+	GetUserByID(ctx *fiber.Ctx, id uint) (*domain.User, error)
+	UpdateUser(ctx *fiber.Ctx, id uint, user *domain.UpdateUserRequest) (*domain.User, error)
+	DeleteUser(ctx *fiber.Ctx, id uint) error
 }
 
 type UserService interface {
-	GetUserByID(ctx *fiber.Ctx, id uint) (*domain.User, error)
 	GetAllUsers(ctx *fiber.Ctx) (int64, int64, int64, []*domain.User, error)
+	GetUserByID(ctx *fiber.Ctx, id uint) (*domain.User, error)
+	UpdateUser(ctx *fiber.Ctx, id uint, user *domain.UpdateUserRequest) (*domain.User, error)
+	DeleteUser(ctx *fiber.Ctx, id uint) error
 }

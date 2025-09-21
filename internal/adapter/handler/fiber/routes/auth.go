@@ -1,9 +1,8 @@
-package httpfiber
+package routes
 
 import (
 	"task-management/internal/core/domain"
 	"task-management/internal/core/port"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )

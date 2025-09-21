@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	config "task-management/internal/adapter/config"
-	httpfiber "task-management/internal/adapter/handler/fiber"
-	gormOrm "task-management/internal/adapter/storage/gorm"
+	"task-management/internal/adapter/handler/fiber"
+	"task-management/internal/adapter/handler/fiber/middleware"
+	"task-management/internal/adapter/handler/fiber/routes"
+	"task-management/internal/adapter/storage/gorm"
 	"task-management/internal/adapter/storage/gorm/repository"
 	"task-management/internal/core/service"
 )
@@ -36,16 +38,19 @@ func main() {
 	organizationService := service.NewOrganizationService(organizationRepo)
 
 	// Initialize handlers
-	userHandler := httpfiber.NewUserHandler(userService)
-	authHandler := httpfiber.NewAuthHandler(authService)
-	organizationHandler := httpfiber.NewOrganizationHandler(organizationService)
+	userHandler := routes.NewUserHandler(userService)
+	authHandler := routes.NewAuthHandler(authService)
+	organizationHandler := routes.NewOrganizationHandler(organizationService)
+
+	// Initialize middleware
+	mOrganization := middleware.NewOrganizationMiddleware(organizationService)
 
 	// Initialize App routes
 	app := httpfiber.NewApp()
 	app.MainRoutes()
-	app.UserRoutes(userHandler)
 	app.AuthRoutes(authHandler)
-	app.OrganizationRoutes(organizationHandler)
+	app.UserRoutes(userHandler, mOrganization)
+	app.OrganizationRoutes(organizationHandler, mOrganization)
 
 	fmt.Println("[INFO] Starting server...")
 	app.Serve(fmt.Sprintf(":%s", config.Env.ApiPort))

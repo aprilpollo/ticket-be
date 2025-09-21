@@ -54,21 +54,6 @@ func FindAll[M any](c *fiber.Ctx, db *gorm.DB, preloads ...string) (int64, int64
 	return total, int64(page), int64(limit), models, nil
 }
 
-func FindOne[M any](c *fiber.Ctx, db *gorm.DB, id int64, preloads ...string) (*M, error) {
-	var models M
-	query := db.Model(new(M))
-
-	for _, preload := range preloads {
-		query = query.Preload(preload)
-	}
-
-	if err := query.First(&models, id).Error; err != nil {
-		return nil, err
-	}
-
-	return &models, nil
-}
-
 func FindAllByCondition[M any](c *fiber.Ctx, db *gorm.DB, column string, value interface{}, preloads ...string) (int64, int64, int64, []M, error) {
 	var models []M
 	var total int64
@@ -116,6 +101,55 @@ func FindAllByCondition[M any](c *fiber.Ctx, db *gorm.DB, column string, value i
 	}
 
 	return total, int64(page), int64(limit), models, nil
+}
+
+func FindOne[M any](c *fiber.Ctx, db *gorm.DB, id int64, preloads ...string) (*M, error) {
+	var models M
+	query := db.Model(new(M))
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if err := query.First(&models, id).Error; err != nil {
+		return nil, err
+	}
+
+	return &models, nil
+}
+
+func FindOneByCondition[M any](c *fiber.Ctx, db *gorm.DB, column string, value interface{}, preloads ...string) (*M, error) {
+	var models M
+	query := db.Model(new(M))
+
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+
+	if err := query.Where(fmt.Sprintf("%s = ?", column), value).First(&models).Error; err != nil {
+		return nil, err
+	}
+
+	return &models, nil
+}
+
+func UpdateOne[M any](c *fiber.Ctx, db *gorm.DB, id int64, data interface{}, preloads ...string) (*M, error) {
+	var Models M
+
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+
+	err := db.First(&Models, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Model(&Models).Where("id = ?", id).Updates(data).Error
+	if err != nil {
+		return nil, err
+	}
+	return &Models, nil
 }
 
 func queryParams(query *gorm.DB, c *fiber.Ctx) *gorm.DB {
